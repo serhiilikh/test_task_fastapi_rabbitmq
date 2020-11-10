@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  rabbit:
+    image: rabbitmq:latest
+
+  worker:
+    image: celery:latest
+    entrypoint: celery worker --app=worker.celery_app -c 2 --loglevel=info
+    depends_on:
+      - rabbit
+
+  fastapi:
+    image: tiangolo/uvicorn-gunicorn-fastapi
+    ports:
+      - 8000:8000
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    depends_on:
+      - rabbit
